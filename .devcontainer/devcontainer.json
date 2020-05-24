@@ -1,0 +1,8 @@
+{
+  "name": "jaramquest/api-core",
+  "dockerFile": "Dockerfile",
+  "extensions": ["esbenp.prettier-vscode", "ms-python.python"],
+  "settings": {
+    "terminal.integrated.shell.linux": "/bin/zsh"
+  }
+}

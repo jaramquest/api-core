@@ -1,0 +1,5 @@
+fastapi
+fastalchemy
+uvloop
+ujson
+uvicorn

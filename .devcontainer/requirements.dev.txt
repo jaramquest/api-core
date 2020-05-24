@@ -1,0 +1,9 @@
+fastapi
+fastalchemy
+uvloop
+ujson
+uvicorn
+
+# dev dependencies
+pylint
+yapf
