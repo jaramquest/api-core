@@ -3,3 +3,4 @@ fastalchemy
 uvloop
 ujson
 uvicorn
+requests

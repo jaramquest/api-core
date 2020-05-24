@@ -3,7 +3,10 @@ fastalchemy
 uvloop
 ujson
 uvicorn
+requests
 
 # dev dependencies
+pytest
 pylint
 yapf
+rope
