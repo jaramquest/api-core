@@ -28,9 +28,9 @@ scripts:
 
 install:
   - |
-    if [ "${TRAVIS_BUILD_STAGE_NAME}" == "Build"]; then
-      pip install -r ./requrements.txt
-      pip install -r .devcontainer/requirements.test.txt
+    if [ "${TRAVIS_BUILD_STAGE_NAME}" == "Build" ]; then
+      pip install -r ./requrements.txt;
+      pip install -r .devcontainer/requirements.test.txt;
     fi
 
 jobs:
