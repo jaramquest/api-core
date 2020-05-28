@@ -2,6 +2,11 @@ sudo: false # for speed up the build
 language: python
 services:
   - docker
+install: sudo apt-get -y install jq sed curl
+before_script:
+  - DOCKER_VERSION=$(curl -sSL "https://registry.hub.docker.com/v2/repositories/$REPO/tags?page_size=1024" | jq -r '."results"[]["name"]' | grep '^[0-9].*[0-9]$' | sort | uniq | tail -n 1)
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+  - cat <<< $(jq '.+{"experimental":"enabled"}' ~/.docker/config.json) > ~/.docker/config.json
 python:
   - 3.8
 install:
