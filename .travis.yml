@@ -1,12 +1,13 @@
 sudo: false # for speed up the build
 language: python
-install: sudo apt-get -y install jq sed curl
 services:
   - docker
 install: sudo apt-get -y install jq sed curl
 before_script:
+  - echo '{"experimental":true}' | sudo tee /etc/docker/daemon.json
+  - echo '{"experimental":"enabled"}' | sudo tee $HOME/.docker/config.json
+  - sudo service docker restart
   - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-  - cat <<< $(jq '.+{"experimental":"enabled"}' ~/.docker/config.json) > ~/.docker/config.json
 python:
   - 3.8
 install:
