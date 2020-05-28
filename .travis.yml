@@ -1,5 +1,5 @@
 os: linux
-language: shell
+language: python
 services:
   - docker
 
@@ -19,16 +19,19 @@ before_script:
 
 stage: "Build"
 
-python:
-  - 3.8
 scripts:
-  - pip install -r ./requirements.txt
-  - pip install -r .devcontainer/requirements.test.txt
   - pytest --cov=./jquest
   - docker build --build-arg ARCH=${ARCH} -t $REPO:${ARCH}-${VERSION} .
   - if [ "${BRANCH}" != "dev" ]; then docker push $REPO:${ARCH}-${VERSION} ; fi
   - docker tag $REPO:${ARCH}-${VERSION} $REPO:${ARCH}-${BRANCH}
   - docker push $REPO:${ARCH}-${BRANCH}
+
+install:
+  - |
+    if [ "${TRAVIS_BUILD_STAGE_NAME}" == "Deploy"]; then
+      pip install -r ./requrements.txt
+      pip install -r .devcontainer/requirements.test.txt
+    fi
 
 jobs:
   fast_finish: true
@@ -39,6 +42,7 @@ jobs:
     - name: "Python 3.8 on linux/amd64"
       arch: "arm64"
       python: 3.8
+
     - stage: "Deploy"
       name: "Manifest"
       git:
@@ -49,7 +53,7 @@ jobs:
             mkdir -p ~/.docker
             echo '{"experimental":"enabled"}' >! ~/.docker/config.json
             docker pull $REPO:amd64-${1} & docker pull $REPO:arm64-${1}
-            docker manifest create $REPO:${1} $REPO:amd64-${1} $REPO:aarch64-${1}
+            docker manifest create $REPO:${1} $REPO:amd64-${1} $REPO:arm64-${1}
             docker manifest annotate $REPO:${1} $REPO:amd64-${1} --os linux --arch amd64
             docker manifest annotate $REPO:${1} $REPO:arm64-${1} --os linux --variant v8
             docker manifest push --purge $REPO:${1}
