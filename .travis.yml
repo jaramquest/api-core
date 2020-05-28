@@ -19,15 +19,7 @@ before_script:
 
 stage: "Build"
 
-install:
-  - |
-    if [ "${TRAVIS_BUILD_STAGE_NAME}" == "Build" ]; then
-      pip install -r ./requirements.txt;
-      pip install -r .devcontainer/requirements.test.txt;
-    fi
-
 scripts:
-  - pytest --cov=./jquest
   - docker build --build-arg ARCH=${ARCH} -t $REPO:${ARCH}-${VERSION} .
   - if [ "${BRANCH}" != "dev" ]; then docker push $REPO:${ARCH}-${VERSION} ; fi
   - docker tag $REPO:${ARCH}-${VERSION} $REPO:${ARCH}-${BRANCH}
@@ -39,6 +31,10 @@ jobs:
     - name: "Python 3.8 on linux/amd64"
       arch: "amd64"
       python: 3.8
+      scripts:
+        - pip install -r ./requirements.txt;
+        - pip install -r .devcontainer/requirements.test.txt;
+        - pytest --cov=./jquest
     - name: "Python 3.8 on linux/arm64"
       arch: "arm64"
       python: 3.8
