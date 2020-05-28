@@ -19,13 +19,6 @@ before_script:
 
 stage: "Build"
 
-scripts:
-  - pytest --cov=./jquest
-  - docker build --build-arg ARCH=${ARCH} -t $REPO:${ARCH}-${VERSION} .
-  - if [ "${BRANCH}" != "dev" ]; then docker push $REPO:${ARCH}-${VERSION} ; fi
-  - docker tag $REPO:${ARCH}-${VERSION} $REPO:${ARCH}-${BRANCH}
-  - docker push $REPO:${ARCH}-${BRANCH}
-
 install:
   - |
     if [ "${TRAVIS_BUILD_STAGE_NAME}" == "Build" ]; then
@@ -33,17 +26,24 @@ install:
       pip install -r .devcontainer/requirements.test.txt;
     fi
 
+scripts:
+  - pytest --cov=./jquest
+  - docker build --build-arg ARCH=${ARCH} -t $REPO:${ARCH}-${VERSION} .
+  - if [ "${BRANCH}" != "dev" ]; then docker push $REPO:${ARCH}-${VERSION} ; fi
+  - docker tag $REPO:${ARCH}-${VERSION} $REPO:${ARCH}-${BRANCH}
+  - docker push $REPO:${ARCH}-${BRANCH}
+
 jobs:
   fast_finish: true
   include:
     - name: "Python 3.8 on linux/amd64"
       arch: "amd64"
       python: 3.8
-    - name: "Python 3.8 on linux/amd64"
+    - name: "Python 3.8 on linux/arm64"
       arch: "arm64"
       python: 3.8
       before_install:
-        - sudo chown -Rv $USER:$GROUP ~/.cache/pip/wheels
+        - sudo chown -R $USER:$GROUP ~/.cache/pip/wheels
 
     - stage: "Deploy"
       name: "Manifest"
