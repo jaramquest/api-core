@@ -9,8 +9,8 @@ install:
   - pip install -r .devcontainer/requirements.test.txt
 scripts:
   - pytest --cov=./jquest
-after_success:
-  - codecov
+#after_success:
+#  - codecov
 deploy:
   provider: script
   script: bash ./scripts/docker_push.sh
