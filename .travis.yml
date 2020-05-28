@@ -40,6 +40,8 @@ jobs:
       git:
         clone: false
       script:
+        - mkdir -p ~/.docker
+        - echo '{"experimental":"enabled"}' >! $HOME/.docker/config.json
         - |
           push() {
             docker pull $REPO:amd64-${1} & docker pull $REPO:aarch64-${1}
