@@ -1,4 +1,4 @@
-FROM jaramquest/api-core
+FROM jaramquest/api-base
 
 COPY ../requirements.txt ./
 COPY requirements.dev.txt ./
