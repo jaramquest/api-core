@@ -1,5 +1,11 @@
-sudo: false # for speed up the build
+os: linux
 language: python
+env:
+  global:
+    - REPO=jaramquest/api-core
+  jobs:
+    - ARCH=amd64
+    - ARCH=aarch64
 services:
   - docker
 install: sudo apt-get -y install jq sed curl
@@ -9,17 +15,37 @@ before_script:
   - echo '{"experimental":"enabled"}' >! $HOME/.docker/config.json
   - sudo service docker restart
   - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+  - VERSION="1.0" ; BRANCH="latest"
+  - if [ "${TRAVIS_BRANCH}" != "master" ]; then VERSION+="${TRAVIS_BRANCH}" ; BRANCH="${TRAVIS_BRANCH}" ; fi
 python:
   - 3.8
 install:
   - pip install -r ./requirements.txt
   - pip install -r .devcontainer/requirements.test.txt
+
+stage: "Build"
 scripts:
   - pytest --cov=./jquest
-#after_success:
-#  - codecov
-deploy:
-  provider: script
-  script: bash ./scripts/docker_push.sh
-  on:
-    branch: master
+  - docker build --build-arg ARCH=${ARCH} -t $REPO:${ARCH}-${VERSION} .
+  - if [ "${BRANCH}" != "dev" ]; then docker push $REPO:${ARCH}-${VERSION} ; fi
+  - docker tag $REPO:${ARCH}-${VERSION} $REPO:${ARCH}-${BRANCH}
+  - docker push $REPO:${ARCH}-${BRANCH}
+
+jobs:
+  fast_finish: true
+  include:
+    - stage: "Deploy"
+      name: "Manifest"
+      git:
+        clone: false
+      script:
+        - |
+          push() {
+            docker pull $REPO:amd64-${1} & docker pull $REPO:aarch64-${1}
+            docker manifest create $REPO:${1} $REPO:amd64-${1} $REPO:aarch64-${1}
+            docker manifest annotate $REPO:${1} $REPO:amd64-${1} --os linux --arch amd64
+            docker manifest annotate $REPO:${1} $REPO:aarch64-${1} --os linux --arch arm64 --variant v8
+            docker manifest push --purge $REPO:${1}
+          }
+        - if [ "${BRANCH}" != "dev" ]; then push ${VERSION} ; fi
+        - push ${BRANCH}
