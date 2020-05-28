@@ -1,14 +1,17 @@
 os: linux
 language: python
+python:
+  - 3.8
+services:
+  - docker
+
 env:
   global:
     - REPO=jaramquest/api-core
   jobs:
     - ARCH=amd64
     - ARCH=aarch64
-services:
-  - docker
-install: sudo apt-get -y install jq sed curl
+
 before_script:
   - echo '{"experimental":true}' | sudo tee /etc/docker/daemon.json
   - mkdir -p ~/.docker
@@ -17,9 +20,6 @@ before_script:
   - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
   - VERSION="1.0" ; BRANCH="latest"
   - if [ "${TRAVIS_BRANCH}" != "master" ]; then VERSION+="${TRAVIS_BRANCH}" ; BRANCH="${TRAVIS_BRANCH}" ; fi
-python:
-  - 3.8
-install:
   - pip install -r ./requirements.txt
   - pip install -r .devcontainer/requirements.test.txt
 
