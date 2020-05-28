@@ -42,6 +42,8 @@ jobs:
     - name: "Python 3.8 on linux/amd64"
       arch: "arm64"
       python: 3.8
+      before_install:
+        - sudo chown -Rv $USER:$GROUP ~/.cache/pip/wheels
 
     - stage: "Deploy"
       name: "Manifest"
@@ -55,7 +57,7 @@ jobs:
             docker pull $REPO:amd64-${1} & docker pull $REPO:arm64-${1}
             docker manifest create $REPO:${1} $REPO:amd64-${1} $REPO:arm64-${1}
             docker manifest annotate $REPO:${1} $REPO:amd64-${1} --os linux --arch amd64
-            docker manifest annotate $REPO:${1} $REPO:arm64-${1} --os linux --variant v8
+            docker manifest annotate $REPO:${1} $REPO:arm64-${1} --os linux --arch arm64 --variant v8
             docker manifest push --purge $REPO:${1}
           }
         - if [ "${BRANCH}" != "dev" ]; then push ${VERSION} ; fi
