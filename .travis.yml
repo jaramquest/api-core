@@ -28,10 +28,15 @@ install:
 
 script:
   #- pytest --cov=./jquest
-  - docker build --build-arg ARCH=${ARCH} -t $REPO:${ARCH}-${VERSION} .
+  - docker build -t $REPO:${ARCH}-${VERSION} .
   - if [ "${BRANCH}" != "dev" ]; then docker push $REPO:${ARCH}-${VERSION} ; fi
   - docker tag $REPO:${ARCH}-${VERSION} $REPO:${ARCH}-${BRANCH}
   - docker push $REPO:${ARCH}-${BRANCH}
+  - |
+    if [ "${ARCH}" == "arm64" ]; then
+      docker tag $REPO:${ARCH}-${VERSION} $REPO:armv8-${BRANCH};
+      docker push $REPO:armv8-${BRANCH}
+    fi
 
 jobs:
   fast_finish: true
@@ -51,11 +56,11 @@ jobs:
         - cat <<< $(jq '.+{"experimental":"enabled"}' ~/.docker/config.json) > ~/.docker/config.json
         - |
           push() {
-            docker pull $REPO:amd64-${1} & docker pull $REPO:arm64-${1}
-            docker manifest create $REPO:${1} $REPO:amd64-${1} $REPO:arm64-${1}
+            docker pull $REPO:amd64-${1} & docker pull $REPO:arm64-${1} & docker pull $REPO:armv8-${1}
+            docker manifest create $REPO:${1} $REPO:amd64-${1} $REPO:arm64-${1} $REPO:arm64-${1}
             docker manifest annotate $REPO:${1} $REPO:amd64-${1} --os linux --arch amd64
-            docker manifest annotate $REPO:${1} $REPO:arm64-${1} --os linux --arch arm --variant v8
-            docker manifest annotate $REPO:${1} $REPO:arm64-${1} --os linux --arch arm64 --variant v8
+            docker manifest annotate $REPO:${1} $REPO:arm64-${1} --os linux --arch arm64
+            docker manifest annotate $REPO:${1} $REPO:armv8-${1} --os linux --arch arm --variant v8
             docker manifest push --purge $REPO:${1}
           }
         - if [ "${BRANCH}" != "dev" ]; then push ${VERSION} ; fi
