@@ -1,7 +1,9 @@
 FROM jaramquest/api-core
 
+COPY ../requirements.txt ./
 COPY requirements.dev.txt ./
-RUN pip install --no-cache-dir -r ./requirements.dev.txt
+RUN pip install --no-cache-dir -r ./requirements.txt && \
+    pip install --no-cache-dir -r ./requirements.dev.txt
 
 ARG USERNAME=vscode
 ARG INSTALL_ZSH="true"

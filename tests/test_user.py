@@ -8,7 +8,10 @@ from jquest.core import schemas
 
 @pytest.fixture(scope='module')
 def init():
-    os.unlink('./test.db')
+    try:
+        os.unlink('./tests/test.db')
+    except:
+        pass
 
 
 @pytest.fixture(scope='module')
