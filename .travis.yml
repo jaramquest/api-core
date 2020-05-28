@@ -1,7 +1,6 @@
 os: linux
 language: python
 services: docker
-install: sudo apt-get -y install jq
 env:
   global:
     - REPO=jaramquest/api-core
@@ -20,6 +19,7 @@ before_script:
 # dev branch 로 push 할 때는 amd64에서만 테스트하도록 한다.
 
 install:
+  - sudo apt-get -y install jq
   - |
     if [ "${TRAVIS_BUILD_STAGE_NAME}" == "!Build" ]; then
       pip install -r ./requirements.txt;
@@ -54,6 +54,7 @@ jobs:
             docker pull $REPO:amd64-${1} & docker pull $REPO:arm64-${1}
             docker manifest create $REPO:${1} $REPO:amd64-${1} $REPO:arm64-${1}
             docker manifest annotate $REPO:${1} $REPO:amd64-${1} --os linux --arch amd64
+            docker manifest annotate $REPO:${1} $REPO:arm64-${1} --os linux --arch arm --variant v8
             docker manifest annotate $REPO:${1} $REPO:arm64-${1} --os linux --arch arm64 --variant v8
             docker manifest push --purge $REPO:${1}
           }
